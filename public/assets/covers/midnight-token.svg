@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" role="img" aria-label="Midnight Token album art">
+  <rect width="300" height="300" fill="#1f1a26"/>
+  <circle cx="150" cy="142" r="94" fill="#5c426d"/>
+  <circle cx="150" cy="142" r="62" fill="#d96b78"/>
+  <circle cx="150" cy="142" r="26" fill="#fff7ed"/>
+  <path d="M52 236h196" stroke="#e2a94e" stroke-width="18" stroke-linecap="round"/>
+  <path d="M82 260h136" stroke="#4aa6a0" stroke-width="14" stroke-linecap="round"/>
+  <path d="M64 64l42 42M236 64l-42 42" stroke="#cde8cf" stroke-width="10" stroke-linecap="round"/>
+</svg>

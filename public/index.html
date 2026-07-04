@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lofi Arcade</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="site-header">
+      <div>
+        <p class="eyebrow">free retro games</p>
+        <h1>Lofi Arcade</h1>
+      </div>
+      <div class="header-panel" aria-label="Website mood">
+        <span class="status-dot"></span>
+        <span>cozy mode</span>
+      </div>
+    </header>
+
+    <section class="arcade-grid" aria-label="Arcade games">
+      <article class="game-card" data-game="pong">
+        <button class="card-launch" type="button" aria-label="Play Pong">
+          <span class="game-kicker">two-player classic</span>
+          <span class="game-title">Pong</span>
+          <span class="game-copy">Bounce the ball past your opponent and build a calm little rally.</span>
+          <span class="score-chip">Record: <strong data-high-score="pong">Wins 0 | AI 0</strong></span>
+        </button>
+      </article>
+
+      <article class="game-card" data-game="snake">
+        <button class="card-launch" type="button" aria-label="Play Snake">
+          <span class="game-kicker">zone-out survival</span>
+          <span class="game-title">Snake</span>
+          <span class="game-copy">Collect glowing snacks, grow longer, and keep the rhythm steady.</span>
+          <span class="score-chip">High score: <strong data-high-score="snake">0</strong></span>
+        </button>
+      </article>
+
+      <article class="game-card" data-game="brickBreaker">
+        <button class="card-launch" type="button" aria-label="Play Brick Breaker">
+          <span class="game-kicker">soft neon chaos</span>
+          <span class="game-title">Brick Breaker</span>
+          <span class="game-copy">Clear the wall one brick at a time without losing the ball.</span>
+          <span class="score-chip">High score: <strong data-high-score="brickBreaker">0</strong></span>
+        </button>
+      </article>
+    </section>
+  </main>
+
+  <section class="game-stage" id="gameStage" aria-hidden="true">
+    <div class="stage-topbar">
+      <button class="back-button" id="backButton" type="button">Back</button>
+      <div>
+        <p class="eyebrow" id="stageSubtitle">now playing</p>
+        <h2 id="stageTitle">Game</h2>
+      </div>
+      <div class="stage-scores">
+        <span>Score <strong id="currentScore">0</strong></span>
+        <span>Record <strong id="stageHighScore">0</strong></span>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="gameCanvas" width="960" height="540"></canvas>
+      <div class="game-message" id="gameMessage">
+        <strong id="messageTitle">Ready?</strong>
+        <span id="messageBody">Press Start to play.</span>
+      </div>
+    </div>
+
+    <div class="stage-controls">
+      <div class="stage-actions">
+        <button id="startButton" type="button">Start</button>
+        <button id="restartButton" type="button">Restart</button>
+      </div>
+      <p id="controlHint">Use keyboard controls to play.</p>
+    </div>
+
+    <div class="touch-controls" aria-label="Touch game controls">
+      <button type="button" data-control="up" aria-label="Move up">Up</button>
+      <button type="button" data-control="left" aria-label="Move left">Left</button>
+      <button type="button" data-control="down" aria-label="Move down">Down</button>
+      <button type="button" data-control="right" aria-label="Move right">Right</button>
+    </div>
+  </section>
+
+  <aside class="music-player" aria-label="Lofi music player">
+    <img id="trackCover" src="assets/covers/rainy-save-room.svg" alt="Current album cover">
+    <div class="track-info">
+      <strong id="trackTitle">Loading track</strong>
+      <span id="trackArtist">Lofi Arcade</span>
+      <label class="progress-control" for="trackProgress">
+        <span id="elapsedTime">0:00</span>
+        <input id="trackProgress" type="range" min="0" max="120" value="0" step="1">
+        <span id="remainingTime">-2:00</span>
+      </label>
+    </div>
+    <div class="music-controls">
+      <button id="rewindTrack" type="button" aria-label="Previous track">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19 20 9 12l10-8v16Z"></path>
+          <path d="M7 19V5"></path>
+        </svg>
+      </button>
+      <button id="toggleMusic" type="button" aria-label="Play or pause music">
+        <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m8 5 11 7-11 7V5Z"></path>
+        </svg>
+        <svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M8 5v14"></path>
+          <path d="M16 5v14"></path>
+        </svg>
+      </button>
+      <button id="skipTrack" type="button" aria-label="Next track">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m5 4 10 8-10 8V4Z"></path>
+          <path d="M17 5v14"></path>
+        </svg>
+      </button>
+      <label class="volume-control" for="volumeSlider">
+        <span>Volume</span>
+        <input id="volumeSlider" type="range" min="0" max="1" value="0.45" step="0.01">
+      </label>
+    </div>
+  </aside>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" role="img" aria-label="Neon Study Break album art">
+  <rect width="300" height="300" fill="#273443"/>
+  <path d="M36 218h228v36H36z" fill="#4aa6a0"/>
+  <path d="M62 70h176v128H62z" fill="#fff7ed"/>
+  <path d="M76 84h148v88H76z" fill="#3b2b3d"/>
+  <path d="M98 196h104v22H98z" fill="#d96b78"/>
+  <circle cx="212" cy="112" r="26" fill="#e2a94e"/>
+  <path d="M92 146h84M92 126h52M92 166h112" stroke="#cde8cf" stroke-width="8" stroke-linecap="round"/>
+</svg>
