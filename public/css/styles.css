@@ -8,6 +8,11 @@
   --gold: #e2a94e;
   --plum: #5c426d;
   --mint: #cde8cf;
+  --tan: #d9b98c;
+  --tan-deep: #3a2c1f;
+  --moss: #8ea67c;
+  --moss-deep: #202b1e;
+  --light-orange: #f2a35f;
   --shadow: 0 24px 70px rgba(39, 33, 45, 0.18);
 }
 
@@ -16,14 +21,66 @@
 }
 
 body {
+  position: relative;
   min-height: 100vh;
   margin: 0;
+  overflow-x: hidden;
   color: var(--ink);
   font-family: Inter, Arial, sans-serif;
   background:
     linear-gradient(120deg, rgba(205, 232, 207, 0.85), rgba(255, 247, 237, 0.64) 42%, rgba(217, 107, 120, 0.22)),
     repeating-linear-gradient(90deg, rgba(92, 66, 109, 0.08) 0 1px, transparent 1px 44px),
     var(--paper);
+}
+
+/* Soft blurred color blobs drifting slowly behind the whole page, for depth. */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ambient-blob {
+  position: absolute;
+  width: clamp(260px, 34vw, 460px);
+  height: clamp(260px, 34vw, 460px);
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.5;
+  animation: drift 26s ease-in-out infinite alternate;
+}
+
+.ambient-blob--rose {
+  top: -8%;
+  left: -6%;
+  background: var(--rose);
+}
+
+.ambient-blob--teal {
+  top: 30%;
+  right: -10%;
+  background: var(--teal);
+  animation-duration: 32s;
+  animation-delay: -6s;
+}
+
+.ambient-blob--gold {
+  bottom: -12%;
+  left: 22%;
+  background: var(--gold);
+  animation-duration: 22s;
+  animation-delay: -12s;
+}
+
+@keyframes drift {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(4vw, 3vh) scale(1.12);
+  }
 }
 
 button {
@@ -61,6 +118,13 @@ canvas {
   text-transform: uppercase;
 }
 
+/* The homepage eyebrow sits on a light background where --plum reads fine,
+   but the same class is reused for the in-game subtitle on a dark
+   background, where it was nearly invisible. Override just that instance. */
+#stageSubtitle {
+  color: var(--tan);
+}
+
 h1,
 h2 {
   margin: 0;
@@ -70,6 +134,13 @@ h2 {
 
 h1 {
   font-size: clamp(3rem, 10vw, 7.8rem);
+}
+
+.tagline {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-family: "Space Mono", monospace;
+  font-size: 0.92rem;
 }
 
 h2 {
@@ -97,6 +168,58 @@ h2 {
   border-radius: 999px;
   background: var(--teal);
   box-shadow: 0 0 0 5px rgba(74, 166, 160, 0.16);
+  animation: pulse-dot 2.6s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    box-shadow: 0 0 0 5px rgba(74, 166, 160, 0.16);
+  }
+  50% {
+    box-shadow: 0 0 0 9px rgba(74, 166, 160, 0.06);
+  }
+}
+
+/* Scrolling marquee strip under the header. The mask fades the text out at
+   both edges instead of hard-cutting it, so it looks intentional. */
+.ticker {
+  overflow: hidden;
+  margin-bottom: 22px;
+  border: 2px solid rgba(39, 33, 45, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 247, 237, 0.6);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+/* The HTML repeats the same set of phrases twice in a row, so translating
+   exactly -50% loops the scroll back to an identical-looking start point
+   with no visible seam or jump. */
+.ticker-track {
+  display: flex;
+  width: max-content;
+  gap: 24px;
+  padding: 10px 0;
+  animation: ticker-scroll 26s linear infinite;
+  color: var(--plum);
+  font-family: "Space Mono", monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ticker-track span {
+  padding: 0 4px;
+}
+
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 .arcade-grid {
@@ -105,8 +228,30 @@ h2 {
   gap: clamp(14px, 2vw, 22px);
 }
 
+/* A slow idle float so the cards don't feel static even before you touch
+   them. Each card gets a different negative animation-delay so they start
+   partway through the loop instead of all bobbing in sync. */
 .game-card {
   min-height: clamp(300px, 48vw, 480px);
+  animation: card-breathe 5.5s ease-in-out infinite;
+}
+
+.game-card:nth-child(2) {
+  animation-delay: -1.8s;
+}
+
+.game-card:nth-child(3) {
+  animation-delay: -3.6s;
+}
+
+@keyframes card-breathe {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 .card-launch {
@@ -126,7 +271,7 @@ h2 {
   align-items: flex-start;
   justify-content: flex-end;
   text-align: left;
-  transition: transform 180ms ease, box-shadow 180ms ease;
+  transition: transform 260ms ease, box-shadow 260ms ease;
 }
 
 .card-launch::before {
@@ -137,31 +282,150 @@ h2 {
     linear-gradient(160deg, transparent 26%, rgba(255, 255, 255, 0.42)),
     repeating-linear-gradient(0deg, rgba(39, 33, 45, 0.06) 0 2px, transparent 2px 18px);
   opacity: 0.9;
+  transition: opacity 260ms ease;
+}
+
+.card-launch:hover::before,
+.card-launch:focus-visible::before {
+  opacity: 1;
+}
+
+/* The "moon" in each card's sky is a plain generated circle rather than an
+   image, so it can be animated (floating, then rising further on hover)
+   independently of the gradient background behind it. Sits at z-index 0,
+   below the sparkle stars and text (both z-index 1). */
+.card-launch::after {
+  content: "";
+  position: absolute;
+  top: 16%;
+  left: 22%;
+  z-index: 0;
+  width: clamp(56px, 9vw, 96px);
+  height: clamp(56px, 9vw, 96px);
+  border-radius: 50%;
+  background: rgba(255, 247, 237, 0.92);
+  box-shadow: 0 0 26px 6px rgba(255, 247, 237, 0.22);
+  animation: moon-float 6s ease-in-out infinite;
+  transition: transform 320ms ease, box-shadow 320ms ease;
+}
+
+@keyframes moon-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.card-launch:hover::after,
+.card-launch:focus-visible::after {
+  transform: translateY(-16px) scale(1.1);
+  box-shadow: 0 0 44px 14px rgba(255, 247, 237, 0.45);
 }
 
 .game-card[data-game="pong"] .card-launch {
-  background:
-    radial-gradient(circle at 25% 18%, rgba(255, 247, 237, 0.9) 0 10%, transparent 11%),
-    linear-gradient(145deg, #f6c56f, #da6f7d 52%, #665078);
+  background: linear-gradient(145deg, #f6c56f, #da6f7d 52%, #665078);
 }
 
 .game-card[data-game="snake"] .card-launch {
-  background:
-    radial-gradient(circle at 28% 24%, rgba(255, 247, 237, 0.84) 0 8%, transparent 9%),
-    linear-gradient(145deg, #90caa4, #4aa6a0 48%, #554b72);
+  background: linear-gradient(145deg, #90caa4, #4aa6a0 48%, #554b72);
 }
 
 .game-card[data-game="brickBreaker"] .card-launch {
-  background:
-    radial-gradient(circle at 26% 18%, rgba(255, 247, 237, 0.86) 0 9%, transparent 10%),
-    linear-gradient(145deg, #e2a94e, #c76566 50%, #3f4e66);
+  background: linear-gradient(145deg, #e2a94e, #c76566 50%, #3f4e66);
 }
 
 .card-launch:hover,
 .card-launch:focus-visible {
-  box-shadow: 0 30px 90px rgba(39, 33, 45, 0.24);
   outline: none;
-  transform: translateY(-4px);
+  transform: translateY(-8px) scale(1.015);
+}
+
+/* Each card's hover glow is tinted to match its own gradient instead of one
+   generic shadow colour, so the glow reads as "this card lighting up"
+   rather than a single reused effect. */
+.game-card[data-game="pong"] .card-launch:hover,
+.game-card[data-game="pong"] .card-launch:focus-visible {
+  box-shadow: 0 30px 90px rgba(217, 107, 120, 0.42);
+}
+
+.game-card[data-game="snake"] .card-launch:hover,
+.game-card[data-game="snake"] .card-launch:focus-visible {
+  box-shadow: 0 30px 90px rgba(74, 166, 160, 0.42);
+}
+
+.game-card[data-game="brickBreaker"] .card-launch:hover,
+.game-card[data-game="brickBreaker"] .card-launch:focus-visible {
+  box-shadow: 0 30px 90px rgba(226, 169, 78, 0.42);
+}
+
+/* A handful of small stars scattered by hand (via nth-child) rather than
+   generated, so their positions and twinkle timing can be tuned individually
+   instead of all pulsing identically. */
+.sparkle-field {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.sparkle-field i {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fffaf2;
+  animation: twinkle 3.2s ease-in-out infinite;
+  transition: animation-duration 260ms ease;
+}
+
+.card-launch:hover .sparkle-field i,
+.card-launch:focus-visible .sparkle-field i {
+  animation-duration: 1.3s;
+}
+
+.sparkle-field i:nth-child(1) {
+  top: 14%;
+  left: 62%;
+  animation-delay: 0s;
+}
+
+.sparkle-field i:nth-child(2) {
+  top: 24%;
+  left: 78%;
+  animation-delay: 0.6s;
+}
+
+.sparkle-field i:nth-child(3) {
+  top: 40%;
+  left: 30%;
+  animation-delay: 1.2s;
+}
+
+.sparkle-field i:nth-child(4) {
+  top: 10%;
+  left: 42%;
+  animation-delay: 1.8s;
+}
+
+.sparkle-field i:nth-child(5) {
+  top: 32%;
+  left: 88%;
+  animation-delay: 2.4s;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.3);
+  }
 }
 
 .game-kicker,
@@ -220,6 +484,29 @@ h2 {
   color: #fffaf2;
 }
 
+/* Pong keeps the original purple stage; Snake and Brick Breaker get their
+   own background so each game feels distinct. app.js sets data-theme on
+   #gameStage to match, and also swaps the canvas's own backdrop gradient
+   (see backdropThemes in app.js) so the two stay in the same colour family
+   instead of clashing. */
+.game-stage[data-theme="snake"] {
+  background:
+    linear-gradient(120deg, rgba(201, 154, 99, 0.55), rgba(58, 44, 31, 0.94)),
+    var(--tan-deep);
+}
+
+.game-stage[data-theme="brickBreaker"] {
+  background:
+    linear-gradient(120deg, rgba(142, 166, 124, 0.5), rgba(32, 43, 30, 0.94)),
+    var(--moss-deep);
+}
+
+/* The default tan subtitle colour doesn't have enough contrast against
+   this game's green background, so it gets its own accent colour. */
+.game-stage[data-theme="brickBreaker"] #stageSubtitle {
+  color: var(--light-orange);
+}
+
 .game-stage.active {
   display: grid;
   grid-template-rows: auto minmax(220px, 1fr) auto;
@@ -229,6 +516,7 @@ h2 {
 .stage-topbar,
 .stage-controls {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
@@ -290,16 +578,19 @@ h2 {
   position: relative;
   display: grid;
   width: 100%;
+  height: 100%;
   min-height: 0;
+  overflow: hidden;
   place-items: center;
 }
 
 canvas {
   display: block;
-  width: min(100%, calc((100dvh - 190px) * 1.777));
-  max-width: 1120px;
-  max-height: calc(100dvh - 190px);
-  aspect-ratio: 16 / 9;
+  /* Actual width/height are set in JS (fitCanvasToStage in app.js), which
+     measures .canvas-wrap directly — percentage max-height combined with
+     aspect-ratio inside a CSS Grid 1fr row does not resolve reliably
+     across browsers, since the row's height isn't yet definite when that
+     sizing calculation runs. */
   border: 2px solid rgba(255, 250, 242, 0.2);
   border-radius: 8px;
   background: #1f1a26;
@@ -327,6 +618,8 @@ canvas {
 }
 
 #controlHint {
+  flex: 1 1 240px;
+  min-width: 0;
   max-width: 46rem;
   margin: 0;
   color: rgba(255, 250, 242, 0.76);
@@ -365,6 +658,7 @@ canvas {
   width: 64px;
   height: 64px;
   border-radius: 6px;
+  background: var(--plum);
   object-fit: cover;
 }
 
@@ -532,11 +826,6 @@ canvas {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  canvas {
-    width: 100%;
-    max-height: 46dvh;
-  }
-
   #controlHint {
     text-align: left;
   }
@@ -649,10 +938,6 @@ canvas {
     justify-content: stretch;
   }
 
-  canvas {
-    max-height: 40dvh;
-  }
-
   .music-player {
     padding: 10px;
   }
@@ -663,6 +948,17 @@ canvas {
 
   .music-controls button {
     min-height: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-blob,
+  .status-dot,
+  .ticker-track,
+  .sparkle-field i,
+  .game-card,
+  .card-launch::after {
+    animation: none;
   }
 }
 
@@ -682,10 +978,5 @@ canvas {
   .stage-topbar,
   .stage-controls {
     gap: 10px;
-  }
-
-  canvas {
-    width: min(100%, calc((100dvh - 146px) * 1.777));
-    max-height: calc(100dvh - 146px);
   }
 }

@@ -10,11 +10,18 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+  <div class="ambient" aria-hidden="true">
+    <span class="ambient-blob ambient-blob--rose"></span>
+    <span class="ambient-blob ambient-blob--teal"></span>
+    <span class="ambient-blob ambient-blob--gold"></span>
+  </div>
+
   <main class="app-shell">
     <header class="site-header">
       <div>
         <p class="eyebrow">free retro games</p>
         <h1>Lofi Arcade</h1>
+        <p class="tagline">Pixel-perfect breaks, synth-brewed beats.</p>
       </div>
       <div class="header-panel" aria-label="Website mood">
         <span class="status-dot"></span>
@@ -22,9 +29,31 @@
       </div>
     </header>
 
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-track">
+        <span>free retro games</span>
+        <span>&bull;</span>
+        <span>three cabinets, one chill playlist</span>
+        <span>&bull;</span>
+        <span>high scores saved server-side</span>
+        <span>&bull;</span>
+        <span>no ads, no accounts</span>
+        <span>&bull;</span>
+        <span>free retro games</span>
+        <span>&bull;</span>
+        <span>three cabinets, one chill playlist</span>
+        <span>&bull;</span>
+        <span>high scores saved server-side</span>
+        <span>&bull;</span>
+        <span>no ads, no accounts</span>
+        <span>&bull;</span>
+      </div>
+    </div>
+
     <section class="arcade-grid" aria-label="Arcade games">
       <article class="game-card" data-game="pong">
         <button class="card-launch" type="button" aria-label="Play Pong">
+          <span class="sparkle-field" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
           <span class="game-kicker">two-player classic</span>
           <span class="game-title">Pong</span>
           <span class="game-copy">Bounce the ball past your opponent and build a calm little rally.</span>
@@ -34,6 +63,7 @@
 
       <article class="game-card" data-game="snake">
         <button class="card-launch" type="button" aria-label="Play Snake">
+          <span class="sparkle-field" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
           <span class="game-kicker">zone-out survival</span>
           <span class="game-title">Snake</span>
           <span class="game-copy">Collect glowing snacks, grow longer, and keep the rhythm steady.</span>
@@ -43,6 +73,7 @@
 
       <article class="game-card" data-game="brickBreaker">
         <button class="card-launch" type="button" aria-label="Play Brick Breaker">
+          <span class="sparkle-field" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
           <span class="game-kicker">soft neon chaos</span>
           <span class="game-title">Brick Breaker</span>
           <span class="game-copy">Clear the wall one brick at a time without losing the ball.</span>

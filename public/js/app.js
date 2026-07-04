@@ -1,5 +1,6 @@
 const canvas = document.querySelector("#gameCanvas");
 const context = canvas.getContext("2d");
+const canvasWrap = document.querySelector(".canvas-wrap");
 const gameStage = document.querySelector("#gameStage");
 const backButton = document.querySelector("#backButton");
 const startButton = document.querySelector("#startButton");
@@ -52,6 +53,16 @@ let highScores = {
   brickBreaker: 0
 };
 
+// Canvas backdrop gradient stops per game theme, kept close in tone to that
+// game's stage background (set in styles.css) but darker/cooler so the
+// playfield still reads as a distinct "screen" rather than blending in.
+const backdropThemes = {
+  pong: ["#292335", "#24333f", "#3b2b3d"],
+  snake: ["#2e2116", "#3d2c1c", "#4a3320"],
+  brickBreaker: ["#182219", "#233024", "#2b3a2a"]
+};
+
+let currentTheme = "pong";
 let activeGame = null;
 let animationFrame = null;
 let keys = {};
@@ -190,6 +201,10 @@ function renderTrack() {
 
   trackCover.src = track.cover;
   trackCover.alt = `${track.album} album cover`;
+  trackCover.onerror = () => {
+    trackCover.onerror = null;
+    trackCover.removeAttribute("src");
+  };
   trackTitle.textContent = track.title;
   trackArtist.textContent = `${track.artist} - ${track.album}`;
   trackProgress.max = track.durationSeconds || 120;
@@ -551,10 +566,11 @@ function clearCanvas() {
 }
 
 function drawBackdrop() {
+  const [start, mid, end] = backdropThemes[currentTheme] || backdropThemes.pong;
   const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);
-  gradient.addColorStop(0, "#292335");
-  gradient.addColorStop(0.5, "#24333f");
-  gradient.addColorStop(1, "#3b2b3d");
+  gradient.addColorStop(0, start);
+  gradient.addColorStop(0.5, mid);
+  gradient.addColorStop(1, end);
   context.fillStyle = gradient;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -580,6 +596,36 @@ function drawText(text, x, y, size = 22, align = "center") {
   context.textAlign = align;
   context.fillText(text, x, y);
 }
+
+// Sizes the canvas to fit .canvas-wrap while keeping its 16:9 aspect ratio.
+// Done in JS (against the wrapper's actual measured box) rather than pure
+// CSS, because percentage max-height combined with aspect-ratio inside a
+// grid row does not resolve reliably across browsers.
+function fitCanvasToStage() {
+  if (!canvasWrap || !canvasWrap.clientWidth || !canvasWrap.clientHeight) {
+    return;
+  }
+
+  const maxWidth = Math.min(canvasWrap.clientWidth, 1120);
+  const maxHeight = canvasWrap.clientHeight;
+  let width = maxWidth;
+  let height = (width * 9) / 16;
+
+  if (height > maxHeight) {
+    height = maxHeight;
+    width = (height * 16) / 9;
+  }
+
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+}
+
+window.addEventListener("resize", () => {
+  fitCanvasToStage();
+  if (activeGame) {
+    activeGame.draw();
+  }
+});
 
 // All three games share this loop: each active game object exposes
 // update()/draw()/reset() and a running flag, so the loop itself doesn't
@@ -619,8 +665,11 @@ function openGame(gameName) {
   controlHint.textContent = meta.hint;
   setScore(0);
   stageHighScore.textContent = formatScoreRecord(gameName);
+  currentTheme = gameName;
+  gameStage.dataset.theme = gameName;
   gameStage.classList.add("active");
   gameStage.setAttribute("aria-hidden", "false");
+  fitCanvasToStage();
   activeGame.reset();
   activeGame.draw();
   showMessage(meta.title, "Press Start to play.");
@@ -664,15 +713,23 @@ function createPong() {
     aiTargetY: canvas.height / 2,
     ballX: canvas.width / 2,
     ballY: canvas.height / 2,
-    ballVX: 6,
-    ballVY: 4
+    ballVX: 3.4,
+    ballVY: 2.2
   };
 
+  // The base rally speed climbs gradually with the total points played so
+  // far (capped at the old fixed speed), so the very first serve is gentle
+  // and the match ramps up over time instead of starting at full speed.
+  function getBaseBallSpeed() {
+    return Math.min(6, 3.4 + (state.p1 + state.p2) * 0.35);
+  }
+
   function resetBall(direction = 1) {
+    const speed = getBaseBallSpeed();
     state.ballX = canvas.width / 2;
     state.ballY = canvas.height / 2;
-    state.ballVX = 6 * direction;
-    state.ballVY = (Math.random() > 0.5 ? 1 : -1) * 4;
+    state.ballVX = speed * direction;
+    state.ballVY = (Math.random() > 0.5 ? 1 : -1) * (speed * 0.65);
   }
 
   function scorePoint(player) {
@@ -827,6 +884,17 @@ function createSnake() {
     snack: { x: 10, y: 10 }
   };
 
+  // The snake advances one tile every N animation frames rather than every
+  // frame (otherwise it would be uncontrollably fast). N starts high (slow)
+  // and steps down as the score grows, so the game speeds up gradually
+  // instead of being at top speed from the first snack.
+  function getMoveInterval() {
+    const startInterval = 12;
+    const minInterval = 5;
+    const step = Math.floor(state.score / 20);
+    return Math.max(minInterval, startInterval - step);
+  }
+
   function placeSnack() {
     do {
       state.snack = {
@@ -875,10 +943,7 @@ function createSnake() {
     update() {
       changeDirection();
       state.tick += 1;
-      // The render loop runs every animation frame, but the snake should
-      // only advance a tile every 8 frames, otherwise it moves too fast to
-      // control.
-      if (state.tick % 8 !== 0) return;
+      if (state.tick % getMoveInterval() !== 0) return;
 
       state.direction = { ...state.nextDirection };
       const head = state.snake[0];
@@ -937,8 +1002,8 @@ function createBrickBreaker() {
     paddleX: canvas.width / 2 - 64,
     ballX: canvas.width / 2,
     ballY: canvas.height - 90,
-    ballVX: 5,
-    ballVY: -5,
+    ballVX: 3.2,
+    ballVY: -3.2,
     bricks: []
   };
 
@@ -946,10 +1011,13 @@ function createBrickBreaker() {
     return Math.min(state.level, maxRows);
   }
 
-  // Once the level count exceeds the number of brick rows available, extra
-  // levels are represented as a speed increase instead of more rows.
+  // Speed ramps a little every level from the very first one, then keeps
+  // climbing (a bit faster) once the row count has capped out at maxRows,
+  // so the ball is gentle at level 1 and gradually builds up from there.
   function getLevelSpeed() {
-    return 5 + Math.max(0, state.level - maxRows) * 0.65;
+    const rampedLevels = Math.min(state.level, maxRows) - 1;
+    const extraLevels = Math.max(0, state.level - maxRows);
+    return 3.2 + rampedLevels * 0.35 + extraLevels * 0.65;
   }
 
   function resetBall() {

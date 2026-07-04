@@ -17,6 +17,8 @@ router.post("/", async (request, response) => {
 
   const scores = await readScores();
 
+  // Pong is scored as a match win/loss tally rather than a single number,
+  // so it's submitted and stored differently from the other two games.
   if (game === "pong") {
     const result = String(request.body.result || "");
     if (!["player", "ai"].includes(result)) {
