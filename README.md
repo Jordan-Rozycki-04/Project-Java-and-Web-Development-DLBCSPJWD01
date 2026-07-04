@@ -14,6 +14,7 @@ A cozy retro arcade in the browser — Pong, Snake, and Brick Breaker — with a
 - A background music player that synthesizes lofi tracks live from chord/melody data, rather than playing audio files
 - High scores are persisted server-side and fetched/updated over the API as you play
 - Responsive layout for desktop, tablet, and mobile
+- `Enter` starts/resumes a game, `Escape` returns to the home menu from anywhere in a game
 
 ## Getting started
 
