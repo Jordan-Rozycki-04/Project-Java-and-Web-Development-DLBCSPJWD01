@@ -993,6 +993,7 @@ function createBrickBreaker() {
   const brickHeight = 28;
   const paddleWidth = 128;
   const paddleHeight = 16;
+  const ballRadius = 12;
   const state = {
     running: false,
     score: 0,
@@ -1020,13 +1021,31 @@ function createBrickBreaker() {
     return 3.2 + rampedLevels * 0.35 + extraLevels * 0.65;
   }
 
+  // Launches at a random angle (mostly upward, ±35 degrees from vertical)
+  // rather than a fixed 45 degrees every time. A fixed launch angle plus
+  // deterministic bounces meant the ball could settle into an exact,
+  // never-ending loop once a lane was cleared of bricks.
   function resetBall() {
     const speed = getLevelSpeed();
+    const angle = (Math.random() - 0.5) * ((Math.PI / 180) * 70);
     state.paddleX = canvas.width / 2 - paddleWidth / 2;
     state.ballX = canvas.width / 2;
     state.ballY = canvas.height - 90;
-    state.ballVX = Math.random() > 0.5 ? speed : -speed;
-    state.ballVY = -speed;
+    state.ballVX = Math.sin(angle) * speed;
+    state.ballVY = -Math.cos(angle) * speed;
+  }
+
+  // Nudges the ball's angle by a small random amount while keeping its
+  // speed the same, so wall/ceiling bounces never repeat an identical path
+  // forever (which is what let the ball get stuck bouncing between the
+  // same two points indefinitely).
+  function jitterAngle() {
+    const speed = Math.hypot(state.ballVX, state.ballVY);
+    const currentAngle = Math.atan2(state.ballVY, state.ballVX);
+    const jitter = (Math.random() - 0.5) * 0.2;
+    const nextAngle = currentAngle + jitter;
+    state.ballVX = Math.cos(nextAngle) * speed;
+    state.ballVY = Math.sin(nextAngle) * speed;
   }
 
   function buildBricks() {
@@ -1082,34 +1101,59 @@ function createBrickBreaker() {
       state.ballX += state.ballVX;
       state.ballY += state.ballVY;
 
-      if (state.ballX <= 12 || state.ballX >= canvas.width - 12) state.ballVX *= -1;
-      if (state.ballY <= 12) state.ballVY *= -1;
+      if (state.ballX <= ballRadius || state.ballX >= canvas.width - ballRadius) {
+        state.ballVX *= -1;
+        jitterAngle();
+      }
+      if (state.ballY <= ballRadius) {
+        state.ballVY *= -1;
+        jitterAngle();
+      }
 
-      const hitsPaddle = state.ballY + 12 >= canvas.height - 48 &&
+      const hitsPaddle = state.ballVY > 0 &&
+        state.ballY + ballRadius >= canvas.height - 48 &&
         state.ballY <= canvas.height - 30 &&
         state.ballX >= state.paddleX &&
         state.ballX <= state.paddleX + paddleWidth;
 
       if (hitsPaddle) {
-        state.ballVY = -Math.abs(state.ballVY);
-        state.ballVX = ((state.ballX - (state.paddleX + paddleWidth / 2)) / (paddleWidth / 2)) * 7;
+        // Deflect based on where the ball hit the paddle, but preserve its
+        // current speed and cap the angle so a paddle-edge hit still makes
+        // solid upward progress instead of skimming almost horizontally.
+        const speed = Math.hypot(state.ballVX, state.ballVY);
+        const offset = Math.max(-1, Math.min(1, (state.ballX - (state.paddleX + paddleWidth / 2)) / (paddleWidth / 2)));
+        const angle = offset * (Math.PI / 3);
+        state.ballVX = Math.sin(angle) * speed;
+        state.ballVY = -Math.cos(angle) * speed;
       }
 
       for (const brick of state.bricks) {
         if (!brick.alive) continue;
-        const hitsBrick = state.ballX >= brick.x &&
-          state.ballX <= brick.x + brick.width &&
-          state.ballY >= brick.y &&
-          state.ballY <= brick.y + brick.height;
 
-        if (hitsBrick) {
-          brick.alive = false;
-          state.ballVY *= -1;
-          state.score += 10;
-          setScore(state.score);
-          saveHighScore("brickBreaker", state.score);
-          break;
+        // Treat the ball as a circle against the brick's rectangle (not
+        // just its centre point), and bounce off whichever face — top/
+        // bottom or left/right — it actually struck, instead of always
+        // flipping vertical velocity regardless of the hit angle.
+        const closestX = Math.max(brick.x, Math.min(state.ballX, brick.x + brick.width));
+        const closestY = Math.max(brick.y, Math.min(state.ballY, brick.y + brick.height));
+        const dx = state.ballX - closestX;
+        const dy = state.ballY - closestY;
+
+        if (dx * dx + dy * dy > ballRadius * ballRadius) {
+          continue;
         }
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+          state.ballVX *= -1;
+        } else {
+          state.ballVY *= -1;
+        }
+
+        brick.alive = false;
+        state.score += 10;
+        setScore(state.score);
+        saveHighScore("brickBreaker", state.score);
+        break;
       }
 
       if (state.bricks.every((brick) => !brick.alive)) {
@@ -1137,7 +1181,7 @@ function createBrickBreaker() {
       context.fillStyle = "#fff7ed";
       context.fillRect(state.paddleX, canvas.height - 44, 128, 16);
       context.beginPath();
-      context.arc(state.ballX, state.ballY, 12, 0, Math.PI * 2);
+      context.arc(state.ballX, state.ballY, ballRadius, 0, Math.PI * 2);
       context.fill();
       drawText(`Score ${state.score}`, 24, 38, 20, "left");
       drawText(`Level ${state.level}`, canvas.width / 2, 38, 20);
@@ -1209,6 +1253,19 @@ window.addEventListener("keydown", (event) => {
   keys[event.code] = true;
   if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(event.code)) {
     event.preventDefault();
+  }
+
+  // Enter mirrors the Start button (only meaningful while a game is loaded
+  // but paused/not yet running), Escape mirrors Back and works at any point
+  // during play, not just on the "press start" screen.
+  if (event.code === "Enter" && activeGame && !activeGame.running) {
+    event.preventDefault();
+    startLoop();
+  }
+
+  if (event.code === "Escape" && gameStage.classList.contains("active")) {
+    event.preventDefault();
+    closeGame();
   }
 });
 
