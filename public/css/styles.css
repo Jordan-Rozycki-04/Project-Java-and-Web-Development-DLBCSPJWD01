@@ -544,8 +544,10 @@ h2 {
 }
 
 .back-button {
-  width: 76px;
+  width: 104px;
   min-height: 44px;
+  padding: 0 10px;
+  white-space: nowrap;
 }
 
 .stage-controls button {

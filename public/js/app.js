@@ -672,7 +672,7 @@ function openGame(gameName) {
   fitCanvasToStage();
   activeGame.reset();
   activeGame.draw();
-  showMessage(meta.title, "Press Start to play.");
+  showMessage(meta.title, "Press Start/Enter to play.");
 }
 
 function closeGame() {
