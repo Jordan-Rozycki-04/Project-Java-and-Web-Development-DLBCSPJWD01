@@ -296,8 +296,8 @@ h2 {
 .card-launch::after {
   content: "";
   position: absolute;
-  top: 16%;
-  left: 22%;
+  top: 8%;
+  left: 50%;
   z-index: 0;
   width: clamp(56px, 9vw, 96px);
   height: clamp(56px, 9vw, 96px);
@@ -308,19 +308,22 @@ h2 {
   transition: transform 320ms ease, box-shadow 320ms ease;
 }
 
+/* translateX(-50%) is baked into every keyframe (rather than set once as a
+   base transform) because the animation and hover states each control the
+   full transform value, which would otherwise overwrite the centering. */
 @keyframes moon-float {
   0%,
   100% {
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateX(-50%) translateY(-10px);
   }
 }
 
 .card-launch:hover::after,
 .card-launch:focus-visible::after {
-  transform: translateY(-16px) scale(1.1);
+  transform: translateX(-50%) translateY(-16px) scale(1.1);
   box-shadow: 0 0 44px 14px rgba(255, 247, 237, 0.45);
 }
 
@@ -333,7 +336,29 @@ h2 {
 }
 
 .game-card[data-game="brickBreaker"] .card-launch {
-  background: linear-gradient(145deg, #e2a94e, #c76566 50%, #3f4e66);
+  background: linear-gradient(145deg, #f2a9c6, #d9718f 52%, #4a3a5c);
+}
+
+/* Each card's "moon" shape/colour is tuned per game so it never blends into
+   the card's own name text underneath it (previously every moon was the
+   same white circle, which washed out against the white game titles). */
+.game-card[data-game="pong"] .card-launch::after {
+  background: #9b7bb8;
+  box-shadow: 0 0 26px 6px rgba(155, 123, 184, 0.35);
+}
+
+.game-card[data-game="snake"] .card-launch::after {
+  border-radius: 14px;
+  background: #f4c675;
+  box-shadow: 0 0 26px 6px rgba(244, 198, 117, 0.35);
+}
+
+.game-card[data-game="brickBreaker"] .card-launch::after {
+  width: clamp(72px, 12vw, 128px);
+  height: clamp(40px, 6.5vw, 64px);
+  border-radius: 8px;
+  background: #8ec9e8;
+  box-shadow: 0 0 26px 6px rgba(142, 201, 232, 0.35);
 }
 
 .card-launch:hover,
@@ -357,7 +382,7 @@ h2 {
 
 .game-card[data-game="brickBreaker"] .card-launch:hover,
 .game-card[data-game="brickBreaker"] .card-launch:focus-visible {
-  box-shadow: 0 30px 90px rgba(226, 169, 78, 0.42);
+  box-shadow: 0 30px 90px rgba(217, 113, 143, 0.42);
 }
 
 /* A handful of small stars scattered by hand (via nth-child) rather than

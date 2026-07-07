@@ -713,15 +713,15 @@ function createPong() {
     aiTargetY: canvas.height / 2,
     ballX: canvas.width / 2,
     ballY: canvas.height / 2,
-    ballVX: 3.4,
-    ballVY: 2.2
+    ballVX: 2.4,
+    ballVY: 1.6
   };
 
   // The base rally speed climbs gradually with the total points played so
   // far (capped at the old fixed speed), so the very first serve is gentle
   // and the match ramps up over time instead of starting at full speed.
   function getBaseBallSpeed() {
-    return Math.min(6, 3.4 + (state.p1 + state.p2) * 0.35);
+    return Math.min(5.2, 2.4 + (state.p1 + state.p2) * 0.28);
   }
 
   function resetBall(direction = 1) {
@@ -843,7 +843,12 @@ function createPong() {
       const hitsRight = state.ballX >= canvas.width - 44 && state.ballY >= state.rightY && state.ballY <= state.rightY + paddleHeight;
 
       if (hitsLeft || hitsRight) {
-        state.ballVX *= -1.08;
+        // Each return nudges the rally faster, but capped relative to the current
+        // ramp stage — otherwise a long rally could runaway well past the speed
+        // the point-based ramp above intends for that stage of the match.
+        const maxRallySpeed = getBaseBallSpeed() * 1.6;
+        const nextSpeed = Math.min(Math.abs(state.ballVX) * 1.08, maxRallySpeed);
+        state.ballVX = hitsLeft ? nextSpeed : -nextSpeed;
         const paddleY = hitsLeft ? state.leftY : state.rightY;
         state.ballVY = ((state.ballY - (paddleY + paddleHeight / 2)) / (paddleHeight / 2)) * 6;
       }
@@ -889,9 +894,9 @@ function createSnake() {
   // and steps down as the score grows, so the game speeds up gradually
   // instead of being at top speed from the first snack.
   function getMoveInterval() {
-    const startInterval = 12;
-    const minInterval = 5;
-    const step = Math.floor(state.score / 20);
+    const startInterval = 17;
+    const minInterval = 6;
+    const step = Math.floor(state.score / 30);
     return Math.max(minInterval, startInterval - step);
   }
 

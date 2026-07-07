@@ -1,8 +1,8 @@
 {
   "pong": {
     "playerWins": 0,
-    "aiWins": 0
+    "aiWins": 1
   },
-  "snake": 0,
-  "brickBreaker": 0
+  "snake": 130,
+  "brickBreaker": 300
 }
